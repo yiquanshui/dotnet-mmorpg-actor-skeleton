@@ -10,7 +10,9 @@ namespace Game.Protocol;
 [Union(5, typeof(EnterNotify))]
 [Union(6, typeof(LeaveNotify))]
 [Union(7, typeof(Ping))]
-public interface IGameMessage {}
+[Union(8, typeof(SceneSnapshot))]
+[Union(9, typeof(RemoteActorEnvelope))]
+public interface IGameMessage { }
 
 [MessagePackObject]
 public sealed class LoginReq : IGameMessage
@@ -58,4 +60,28 @@ public sealed class LeaveNotify : IGameMessage
 public sealed class Ping : IGameMessage
 {
     [Key(0)] public long Ts { get; set; }
+}
+
+[MessagePackObject]
+public sealed class PlayerViewData
+{
+    [Key(0)] public long PlayerId { get; set; }
+    [Key(1)] public float X { get; set; }
+    [Key(2)] public float Y { get; set; }
+}
+
+[MessagePackObject]
+public sealed class SceneSnapshot : IGameMessage
+{
+    [Key(0)] public long PlayerId { get; set; }
+    [Key(1)] public PlayerViewData[] Players { get; set; } = Array.Empty<PlayerViewData>();
+}
+
+[MessagePackObject]
+public sealed class RemoteActorEnvelope : IGameMessage
+{
+    [Key(0)] public string TargetActor { get; set; } = string.Empty;
+    [Key(1)] public string SenderNode { get; set; } = string.Empty;
+    [Key(2)] public byte[] Payload { get; set; } = Array.Empty<byte>();
+    [Key(3)] public string MessageId { get; set; } = string.Empty;
 }

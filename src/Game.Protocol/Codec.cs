@@ -15,10 +15,11 @@ public static class Codec
         var buffer = new ArrayBufferWriter<byte>(256);
         MessagePackSerializer.Serialize<IGameMessage>(buffer, msg, Options);
 
-        var span = writer.GetSpan(4 + buffer.WrittenCount);
+        var total = 4 + buffer.WrittenCount;
+        var span = writer.GetSpan(total);
         BinaryPrimitives.WriteInt32BigEndian(span, buffer.WrittenCount);
         buffer.WrittenSpan.CopyTo(span[4..]);
-        writer.Advance(4 + buffer.WrittenCount);
+        writer.Advance(total);
     }
 
     public static bool TryRead(ref ReadOnlySequence<byte> source, out IGameMessage? msg)

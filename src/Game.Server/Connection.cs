@@ -14,7 +14,7 @@ public sealed class Connection
         await Task.WhenAll(fill, read);
     }
 
-    static async Task FillAsync(Socket s, PipeWriter w)
+    private static async Task FillAsync(Socket s, PipeWriter w)
     {
         try
         {
@@ -33,7 +33,7 @@ public sealed class Connection
         }
     }
 
-    static async Task ReadAsync(PipeReader r, Func<IGameMessage, ValueTask> onMessage)
+    private static async Task ReadAsync(PipeReader r, Func<IGameMessage, ValueTask> onMessage)
     {
         try
         {

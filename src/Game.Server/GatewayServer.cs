@@ -1,5 +1,6 @@
 using Game.ActorRuntime;
 using Game.Protocol;
+using MessagePack;
 using System.Net;
 using System.Net.Sockets;
 using System.IO.Pipelines;
@@ -57,11 +58,18 @@ public sealed class GatewayServer
                     player.Tell(login);
                     await send(new LoginAck { Ok = true });
                     break;
+
+                case RemoteActorEnvelope envelope:
+                    var decoded = MessagePackSerializer.Deserialize<IGameMessage>(envelope.Payload);
+                    _system.Get(envelope.TargetActor)?.Tell(decoded);
+                    break;
+
                 default:
                     if (playerId != 0)
                         _system.Get($"player:{playerId}")?.Tell(msg);
                     break;
             }
+
             await ValueTask.CompletedTask;
         });
     }

@@ -114,29 +114,32 @@ public sealed class SceneActor : Actor
     private void SendSnapshotToPlayer(long playerId)
     {
         if (!_playerRefs.TryGetValue(playerId, out var playerRef)) return;
+        if (!_players.TryGetValue(playerId, out var self)) return;
 
-        var visible = _players
-            .Where(kvp => kvp.Key != playerId)
-            .Where(kvp => DistanceSquared(_players[playerId], kvp.Value) <= 2500f)
-            .Select(kvp => new PlayerViewData
+        var visible = new List<PlayerViewData>(64);
+        foreach (var nc in NeighborCells(self.cx, self.cy))
+        {
+            if (!_cells.TryGetValue(nc, out var set))
+                continue;
+
+            foreach (var otherId in set)
             {
-                PlayerId = kvp.Key,
-                X = kvp.Value.x,
-                Y = kvp.Value.y
-            })
-            .ToArray();
+                if (otherId == playerId) continue;
+                if (!_players.TryGetValue(otherId, out var op)) continue;
+
+                visible.Add(new PlayerViewData
+                {
+                    PlayerId = otherId,
+                    X = op.x,
+                    Y = op.y
+                });
+            }
+        }
 
         playerRef.Tell(new SceneSnapshot
         {
             PlayerId = playerId,
-            Players = visible
+            Players = visible.ToArray()
         });
-    }
-
-    private static float DistanceSquared((float x, float y, int cx, int cy) a, (float x, float y, int cx, int cy) b)
-    {
-        var dx = a.x - b.x;
-        var dy = a.y - b.y;
-        return dx * dx + dy * dy;
     }
 }
